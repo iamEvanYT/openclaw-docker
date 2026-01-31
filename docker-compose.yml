@@ -1,0 +1,62 @@
+services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    hostname: openclawd
+    env_file: ./tailscale/.env
+    environment:
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: false
+      TS_SERVE_CONFIG: /var/lib/tailscale/config/serve.json
+    volumes:
+      - ./volumes/tailscale:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    restart: unless-stopped
+    networks:
+      - openclawd-network
+
+  gateway:
+    image: ghcr.io/openclaw/openclaw
+    env_file: ./gateway/.env
+    environment:
+      HOME: /home/node
+      TERM: xterm-256color
+    volumes:
+      - ./volumes/config:/home/node/.openclaw
+      - ./volumes/workspace:/home/node/openclaw
+      - ./volumes/storage:/home/node/storage
+      - ./volumes/files/.bashrc:/home/node/.bashrc
+      - ./volumes/files/.profile:/home/node/.profile
+      - ./volumes/files/.bash_aliases:/home/node/.bash_aliases
+    init: true
+    restart: unless-stopped
+    depends_on:
+      - tailscale
+    network_mode: service:tailscale
+    command:
+      ["node", "dist/index.js", "gateway", "--bind", "lan", "--port", "18789"]
+
+  browser:
+    image: ghcr.io/iamevanyt/openclaw-sandbox-browser
+    hostname: openclaw-browser
+    shm_size: 2gb
+    volumes:
+      - ./volumes/browser:/home/openclaw-browser/.chrome
+    expose:
+      - 9222:9222
+      - 5900:5900
+    ports:
+      - 6080:6080
+    restart: unless-stopped
+    networks:
+      openclawd-network:
+        ipv4_address: 172.20.0.10
+
+networks:
+  openclawd-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24

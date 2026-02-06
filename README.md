@@ -33,9 +33,34 @@ The setup script will:
 - Run the OpenClaw onboarding wizard
 - Generate the Tailscale HTTPS configuration automatically
 
+### 3. Generate HTTPS Certificate (Required)
+
+Even after automated setup, you must generate the HTTPS certificate:
+
+```bash
+# SSH into the Tailscale container
+sh ./scripts/ssh-tailscale.sh
+
+# Generate certificate (replace with your actual Tailscale domain)
+tailscale cert your-machine.your-tailnet.ts.net
+
+# Exit the container
+exit
+```
+
+Find your Tailscale domain in the [admin console](https://login.tailscale.com/admin/machines) or run `tailscale status` inside the container.
+
+### 4. Restart Services
+
+```bash
+sh ./scripts/restart.sh
+```
+
+Your OpenClaw instance is now ready at `https://your-machine.tailnet.ts.net`
+
 ## Manual Setup (Advanced)
 
-If you prefer to set up manually:
+If you prefer to set up manually instead of using `setup.sh`:
 
 ### 1. Configure Tailscale
 
@@ -53,7 +78,7 @@ sh ./scripts/startup.sh
 
 ### 3. Enable HTTPS
 
-In the [Tailscale Admin Console](https://login.tailscale.com/admin/dns), enable "HTTPS Certificates".
+In the [Tailscale Admin Console](https://login.tailscale.com/admin/dns), enable "HTTPS Certificates". This is required for both automated and manual setup.
 
 ### 4. Generate Certificate
 
@@ -118,12 +143,14 @@ openclaw onboard
 
 ## Accessing Services
 
-After setup, access your services via Tailscale:
+After setup and certificate generation, access your services via Tailscale:
 
 | Service | URL | Description |
 |---------|-----|-------------|
 | OpenClaw Gateway | `https://your-machine.tailnet.ts.net` | Main API and dashboard |
 | noVNC (Browser) | `https://your-machine.tailnet.ts.net:8443` | Remote browser desktop |
+
+**Note:** HTTPS will not work until you complete the certificate generation step (see Quick Start step 3).
 
 ## Directory Structure
 

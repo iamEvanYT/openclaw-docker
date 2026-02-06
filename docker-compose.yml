@@ -40,6 +40,7 @@ services:
 
   browser:
     image: ghcr.io/iamevanyt/openclaw-sandbox-browser
+    platform: linux/amd64
     hostname: openclaw-browser
     shm_size: 2gb
     volumes:

@@ -1,38 +1,206 @@
-# OpenClaw Docker Setup (with Tailscale)
+# OpenClaw Docker
 
-## Setup
+A Docker Compose setup for running [OpenClaw](https://github.com/openclaw/openclaw) with Tailscale VPN for secure remote access.
 
-1. Run `sh ./setup.sh` to setup everything initially.
-2. Set the Tailscale Auth Key in the `tailscale/.env` file.
-3. Run `sh ./scripts/startup.sh` to start the services.
-4. In Tailscale Admin Console, go to DNS and turn on 'Enable HTTPS' if not enabled.
-5. Run `sh ./scripts/ssh-tailscale.sh` to SSH into the Tailscale container.
-6. Then in the Tailscale container, run `tailscale cert <tailscale-domain>` to generate a HTTPS certificate.
-7. Setup `serve.json` as described below.
-8. Run `sh ./scripts/restart.sh` to restart the services.
-9. Run `sh ./scripts/ssh-gateway.sh` to SSH into the Gateway container.
-10. Finally, run `openclaw onboard` to onboard the gateway!
+## What's Included
 
-## Setup `serve.json`
+| Service | Description |
+|---------|-------------|
+| **gateway** | The main OpenClaw gateway (AI agent runtime) |
+| **tailscale** | Secure VPN tunnel for remote HTTPS access |
+| **browser** | Sandbox browser for web automation (Chrome + noVNC) |
 
-Put this in volumes/tailscale/config/serve.json:
+## Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) and Docker Compose
+- [Tailscale](https://tailscale.com/) account
+- Tailscale auth key from [admin console](https://login.tailscale.com/admin/settings/keys)
+
+## Quick Start
+
+```bash
+# 1. Clone and enter the directory
+git clone https://github.com/iamEvanYT/openclaw-docker.git
+cd openclaw-docker
+
+# 2. Run the automated setup
+sh ./setup.sh
+```
+
+The setup script will:
+- Prompt for your Tailscale auth key
+- Configure and start all services
+- Run the OpenClaw onboarding wizard
+- Generate the Tailscale HTTPS configuration automatically
+
+## Manual Setup (Advanced)
+
+If you prefer to set up manually:
+
+### 1. Configure Tailscale
+
+Create `tailscale/.env`:
+
+```env
+TS_AUTHKEY=tskey-auth-xxxxxxxxxxxxxxxx
+```
+
+### 2. Start Services
+
+```bash
+sh ./scripts/startup.sh
+```
+
+### 3. Enable HTTPS
+
+In the [Tailscale Admin Console](https://login.tailscale.com/admin/dns), enable "HTTPS Certificates".
+
+### 4. Generate Certificate
+
+```bash
+sh ./scripts/ssh-tailscale.sh
+tailscale cert your-machine.your-tailnet.ts.net
+exit
+```
+
+### 5. Create Serve Configuration
+
+Create `volumes/tailscale/config/serve.json`:
 
 ```json
 {
   "TCP": {
-    "443": { "HTTPS": true }
+    "443": { "HTTPS": true },
+    "8443": { "HTTPS": true }
   },
   "Web": {
     "${TS_CERT_DOMAIN}:443": {
+      "NOTE": "OpenClaw Gateway",
       "Handlers": {
         "/": { "Proxy": "http://127.0.0.1:18789" }
+      }
+    },
+    "${TS_CERT_DOMAIN}:8443": {
+      "NOTE": "OpenClaw Browser noVNC",
+      "Handlers": {
+        "/": { "Proxy": "http://172.20.0.10:6080" }
       }
     }
   },
   "AllowFunnel": {
-    "${TS_CERT_DOMAIN}:18789": false
+    "${TS_CERT_DOMAIN}:443": false,
+    "${TS_CERT_DOMAIN}:8443": false
   }
 }
 ```
 
-This will then allow HTTPS to work when you go to the domain on tailscale.
+### 6. Restart and Onboard
+
+```bash
+sh ./scripts/restart.sh
+sh ./scripts/ssh-gateway.sh
+openclaw onboard
+```
+
+## Available Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `setup.sh` | Initial automated setup (includes onboarding) |
+| `scripts/startup.sh` | Start all services |
+| `scripts/shutdown.sh` | Stop all services |
+| `scripts/restart.sh` | Restart all services |
+| `scripts/ssh-gateway.sh` | SSH into the OpenClaw gateway container |
+| `scripts/ssh-tailscale.sh` | SSH into the Tailscale container |
+| `scripts/gateway-logs.sh` | View gateway logs |
+| `scripts/update.sh` | Update to latest OpenClaw image |
+| `scripts/fix-perms.sh` | Fix file permissions |
+
+## Accessing Services
+
+After setup, access your services via Tailscale:
+
+| Service | URL | Description |
+|---------|-----|-------------|
+| OpenClaw Gateway | `https://your-machine.tailnet.ts.net` | Main API and dashboard |
+| noVNC (Browser) | `https://your-machine.tailnet.ts.net:8443` | Remote browser desktop |
+
+## Directory Structure
+
+```
+.
+├── docker-compose.yml      # Service definitions
+├── setup.sh                # Automated setup script
+├── gateway/.env            # Gateway environment variables
+├── tailscale/.env          # Tailscale auth key
+├── scripts/                # Helper scripts
+└── volumes/                # Persistent data
+    ├── config/             # OpenClaw configuration
+    ├── workspace/          # OpenClaw workspace
+    ├── storage/            # Persistent storage
+    ├── tailscale/          # Tailscale state & certificates
+    └── browser/            # Browser profile data
+```
+
+## Environment Variables
+
+### Gateway (`gateway/.env`)
+
+Add your secrets here. See [OpenClaw documentation](https://docs.openclaw.ai) for available options.
+
+### Tailscale (`tailscale/.env`)
+
+| Variable | Description |
+|----------|-------------|
+| `TS_AUTHKEY` | Your Tailscale auth key (required) |
+
+## Troubleshooting
+
+### Services won't start
+
+Check logs:
+```bash
+docker compose logs -f
+```
+
+### Tailscale not connecting
+
+Verify your auth key is set correctly in `tailscale/.env` and hasn't expired.
+
+### HTTPS not working
+
+Ensure you've:
+1. Enabled HTTPS in Tailscale DNS settings
+2. Generated certificates with `tailscale cert`
+3. Created the `serve.json` configuration
+
+### Permission denied errors
+
+Run:
+```bash
+sh ./scripts/fix-perms.sh
+```
+
+## Updating
+
+To update to the latest OpenClaw version:
+
+```bash
+sh ./scripts/update.sh
+```
+
+## Security Notes
+
+- The `AllowFunnel` setting is disabled by default. Do not enable unless you understand the security implications.
+- Keep your Tailscale auth key secure and rotate it periodically.
+- The browser service runs with isolated permissions but still exercise caution when browsing untrusted sites.
+
+## License
+
+See [LICENSE](LICENSE) for details.
+
+## Support
+
+- [OpenClaw Documentation](https://docs.openclaw.ai)
+- [OpenClaw Discord](https://discord.gg/clawd)
+- [Tailscale Documentation](https://tailscale.com/kb)

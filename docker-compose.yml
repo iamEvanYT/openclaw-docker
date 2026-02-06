@@ -47,8 +47,7 @@ services:
     expose:
       - 9222:9222
       - 5900:5900
-    ports:
-      - 6080:6080
+      - 6080:6080 # noVNC server (forwarded using tailscale)
     restart: unless-stopped
     networks:
       openclawd-network:

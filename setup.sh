@@ -75,18 +75,26 @@ if [ $ONBOARDING_STATUS -eq 0 ]; then
     cat > volumes/tailscale/config/serve.json << 'EOF'
 {
   "TCP": {
-    "443": {
-      "HTTPS": true
-    }
+    "443": { "HTTPS": true },
+    "8443": { "HTTPS": true }
   },
   "Web": {
     "${TS_CERT_DOMAIN}:443": {
+      "NOTE": "OpenClaw Gateway",
       "Handlers": {
-        "/": {
-          "Proxy": "http://localhost:18789"
-        }
+        "/": { "Proxy": "http://127.0.0.1:18789" }
+      }
+    },
+    "${TS_CERT_DOMAIN}:8443": {
+      "NOTE": "OpenClaw Browser noVNC",
+      "Handlers": {
+        "/": { "Proxy": "http://172.20.0.10:6080" }
       }
     }
+  },
+  "AllowFunnel": {
+    "${TS_CERT_DOMAIN}:443": false,
+    "${TS_CERT_DOMAIN}:8443": false
   }
 }
 EOF

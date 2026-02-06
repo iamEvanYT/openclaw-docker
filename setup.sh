@@ -3,6 +3,30 @@
 # Remove `.git` repository of the template
 rm -rf .git
 
+# Prompt for instance name
+echo ""
+echo "=========================================="
+echo "Instance Configuration"
+echo "=========================================="
+echo "Enter a name for this OpenClaw instance."
+echo "This will be the hostname in Tailscale (e.g., 'my-openclaw')."
+echo "Press Enter to use default: openclawd"
+echo ""
+printf "Instance Name: "
+read -r INSTANCE_NAME
+
+# Use default if not provided
+if [ -z "$INSTANCE_NAME" ]; then
+    INSTANCE_NAME="openclawd"
+    echo "Using default: openclawd"
+else
+    echo "Using instance name: $INSTANCE_NAME"
+    # Update docker-compose.yml with the new hostname
+    sed -i.bak "s/hostname: openclawd/hostname: $INSTANCE_NAME/" docker-compose.yml
+    rm -f docker-compose.yml.bak
+    echo "✓ Updated docker-compose.yml hostname"
+fi
+
 # Prompt for Tailscale auth key
 echo ""
 echo "=========================================="

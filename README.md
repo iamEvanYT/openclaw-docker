@@ -182,6 +182,32 @@ Add your secrets here. See [OpenClaw documentation](https://docs.openclaw.ai) fo
 | ------------ | ---------------------------------- |
 | `TS_AUTHKEY` | Your Tailscale auth key (required) |
 
+## Browser Support Configuration
+
+To enable browser automation in OpenClaw, add the `browser` key to your `volumes/config/openclaw.json` configuration file:
+
+```json
+{
+  "browser": {
+    "enabled": true,
+    "remoteCdpTimeoutMs": 1500,
+    "remoteCdpHandshakeTimeoutMs": 3000,
+    "color": "#FF4500",
+    "defaultProfile": "openclaw",
+    "profiles": {
+      "openclaw": {
+        "cdpUrl": "http://172.20.0.10:9222",
+        "color": "#FF4500"
+      }
+    }
+  }
+}
+```
+
+This configuration connects OpenClaw to the containerized browser service via Chrome DevTools Protocol (CDP).
+
+A restart may be necessary to apply the changes.
+
 ## Troubleshooting
 
 ### Services won't start
@@ -195,6 +221,8 @@ docker compose logs -f
 ### Tailscale not connecting
 
 Verify your auth key is set correctly in `tailscale/.env` and hasn't expired.
+
+If tailscale had worked before, comment out the `TS_AUTHKEY` in `tailscale/.env` with the `#` symbol at the beginning of the line and restart the services.
 
 ### HTTPS not working
 

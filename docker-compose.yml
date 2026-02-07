@@ -46,9 +46,9 @@ services:
     volumes:
       - ./volumes/browser:/home/openclaw-browser/.chrome
     expose:
-      - 9222:9222
-      - 5900:5900
-      - 6080:6080 # noVNC server (forwarded using tailscale)
+      - "9222"
+      - "5900"
+      - "6080" # noVNC server (forwarded using tailscale)
     restart: unless-stopped
     networks:
       openclawd-network:

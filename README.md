@@ -4,11 +4,11 @@ A Docker Compose setup for running [OpenClaw](https://github.com/openclaw/opencl
 
 ## What's Included
 
-| Service | Description |
-|---------|-------------|
-| **gateway** | The main OpenClaw gateway (AI agent runtime) |
-| **tailscale** | Secure VPN tunnel for remote HTTPS access |
-| **browser** | Sandbox browser for web automation (Chrome + noVNC) |
+| Service       | Description                                         |
+| ------------- | --------------------------------------------------- |
+| **gateway**   | The main OpenClaw gateway (AI agent runtime)        |
+| **tailscale** | Secure VPN tunnel for remote HTTPS access           |
+| **browser**   | Sandbox browser for web automation (Chrome + noVNC) |
 
 ## Prerequisites
 
@@ -28,6 +28,7 @@ sh ./setup.sh
 ```
 
 The setup script will:
+
 - Prompt for your Tailscale auth key
 - Configure and start all services
 - Run the OpenClaw onboarding wizard
@@ -129,26 +130,26 @@ openclaw onboard
 
 ## Available Scripts
 
-| Script | Purpose |
-|--------|---------|
-| `setup.sh` | Initial automated setup (includes onboarding) |
-| `scripts/startup.sh` | Start all services |
-| `scripts/shutdown.sh` | Stop all services |
-| `scripts/restart.sh` | Restart all services |
-| `scripts/ssh-gateway.sh` | SSH into the OpenClaw gateway container |
-| `scripts/ssh-tailscale.sh` | SSH into the Tailscale container |
-| `scripts/gateway-logs.sh` | View gateway logs |
-| `scripts/update.sh` | Update to latest OpenClaw image |
-| `scripts/fix-perms.sh` | Fix file permissions |
+| Script                     | Purpose                                       |
+| -------------------------- | --------------------------------------------- |
+| `setup.sh`                 | Initial automated setup (includes onboarding) |
+| `scripts/startup.sh`       | Start all services                            |
+| `scripts/shutdown.sh`      | Stop all services                             |
+| `scripts/restart.sh`       | Restart all services                          |
+| `scripts/ssh-gateway.sh`   | SSH into the OpenClaw gateway container       |
+| `scripts/ssh-tailscale.sh` | SSH into the Tailscale container              |
+| `scripts/gateway-logs.sh`  | View gateway logs                             |
+| `scripts/update.sh`        | Update to latest OpenClaw image               |
+| `scripts/fix-perms.sh`     | Fix file permissions                          |
 
 ## Accessing Services
 
 After setup and certificate generation, access your services via Tailscale:
 
-| Service | URL | Description |
-|---------|-----|-------------|
-| OpenClaw Gateway | `https://your-machine.tailnet.ts.net` | Main API and dashboard |
-| noVNC (Browser) | `https://your-machine.tailnet.ts.net:8443` | Remote browser desktop |
+| Service          | URL                                        | Description            |
+| ---------------- | ------------------------------------------ | ---------------------- |
+| OpenClaw Gateway | `https://your-machine.tailnet.ts.net`      | Main API and dashboard |
+| noVNC (Browser)  | `https://your-machine.tailnet.ts.net:8443` | Remote browser desktop |
 
 **Note:** HTTPS will not work until you complete the certificate generation step (see Quick Start step 3).
 
@@ -177,8 +178,8 @@ Add your secrets here. See [OpenClaw documentation](https://docs.openclaw.ai) fo
 
 ### Tailscale (`tailscale/.env`)
 
-| Variable | Description |
-|----------|-------------|
+| Variable     | Description                        |
+| ------------ | ---------------------------------- |
 | `TS_AUTHKEY` | Your Tailscale auth key (required) |
 
 ## Troubleshooting
@@ -186,6 +187,7 @@ Add your secrets here. See [OpenClaw documentation](https://docs.openclaw.ai) fo
 ### Services won't start
 
 Check logs:
+
 ```bash
 docker compose logs -f
 ```
@@ -197,6 +199,7 @@ Verify your auth key is set correctly in `tailscale/.env` and hasn't expired.
 ### HTTPS not working
 
 Ensure you've:
+
 1. Enabled HTTPS in Tailscale DNS settings
 2. Generated certificates with `tailscale cert`
 3. Created the `serve.json` configuration
@@ -204,6 +207,7 @@ Ensure you've:
 ### Permission denied errors
 
 Run:
+
 ```bash
 sh ./scripts/fix-perms.sh
 ```
@@ -221,10 +225,6 @@ sh ./scripts/update.sh
 - The `AllowFunnel` setting is disabled by default. Do not enable unless you understand the security implications.
 - Keep your Tailscale auth key secure and rotate it periodically.
 - The browser service runs with isolated permissions but still exercise caution when browsing untrusted sites.
-
-## License
-
-See [LICENSE](LICENSE) for details.
 
 ## Support
 

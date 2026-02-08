@@ -70,7 +70,7 @@ cat > volumes/tailscale/config/serve.json << 'EOF'
     "${TS_CERT_DOMAIN}:1443": {
       "NOTE": "OpenClaw Explorer",
       "Handlers": {
-        "/": { "Proxy": "http://172.20.0.11:8080" }
+        "/": { "Proxy": "http://172.20.0.11:8443" }
       }
     },
     "${TS_CERT_DOMAIN}:8443": {

@@ -55,28 +55,23 @@ services:
         ipv4_address: 172.20.0.10
 
   explorer:
-    image: codercom/code-server:latest
+    image: linuxserver/code-server:latest
     expose:
-      - "8080"
+      - "8443"
     volumes:
-      - ./volumes/config:/workspace/config
-      - ./volumes/workspace:/workspace/workspace
+      - ./volumes/config:/config/workspace/config
+      - ./volumes/workspace:/config/workspace/workspace
+      - ./explorer-config.json:/config/data/User/settings.json:ro
     environment:
       - PASSWORD=openclaw
       - USER=coder
-    user: "1000:1000"
+      - PUID=1000
+      - PGID=1000
     tmpfs:
       - /tmp:noexec,nosuid,size=100m
-    security_opt:
-      - no-new-privileges:true
     networks:
       openclawd-network:
         ipv4_address: 172.20.0.11
-    command: >
-      --bind-addr 0.0.0.0:8080
-      --disable-telemetry
-      --disable-update-check
-      /workspace
 
 networks:
   openclawd-network:

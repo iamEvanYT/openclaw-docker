@@ -110,7 +110,7 @@ Create `volumes/tailscale/config/serve.json`:
     "${TS_CERT_DOMAIN}:1443": {
       "NOTE": "OpenClaw Explorer",
       "Handlers": {
-        "/": { "Proxy": "http://172.20.0.11:8080" }
+        "/": { "Proxy": "http://172.20.0.11:8443" }
       }
     },
     "${TS_CERT_DOMAIN}:8443": {
@@ -154,11 +154,11 @@ openclaw onboard
 
 After setup and certificate generation, access your services via Tailscale:
 
-| Service               | URL                                         | Description            |
-| --------------------- | ------------------------------------------- | ---------------------- |
-| OpenClaw Gateway      | `https://your-machine.tailnet.ts.net`       | Main API and dashboard |
-| OpenClaw Data Explorer| `https://your-machine.tailnet.ts.net:1443`  | Data exploration tool  |
-| Browser Viewer (noVNC)| `https://your-machine.tailnet.ts.net:8443`  | Remote browser desktop |
+| Service                | URL                                        | Description                                 |
+| ---------------------- | ------------------------------------------ | ------------------------------------------- |
+| OpenClaw Gateway       | `https://your-machine.tailnet.ts.net`      | Main API and dashboard                      |
+| OpenClaw Data Explorer | `https://your-machine.tailnet.ts.net:1443` | OpenClaw data explorer (Password: openclaw) |
+| Browser Viewer (noVNC) | `https://your-machine.tailnet.ts.net:8443` | Remote browser desktop                      |
 
 **Note:** HTTPS will not work until you complete the certificate generation step (see Quick Start step 3).
 

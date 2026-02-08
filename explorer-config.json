@@ -1,0 +1,8 @@
+{
+  "workbench.colorTheme": "Default Dark Modern",
+  "terminal.integrated.shellIntegration.enabled": false,
+  "terminal.integrated.enablePersistentSessions": false,
+  "workbench.enableExperiments": false,
+  "extensions.autoUpdate": false,
+  "workbench.startupEditor": "none"
+}

@@ -47,18 +47,68 @@ else
     echo "⚠ No auth key provided. Make sure to manually set TS_AUTHKEY in tailscale/.env"
 fi
 
+# Prompt for optional services
+echo ""
+echo "=========================================="
+echo "Optional Services"
+echo "=========================================="
+echo "Enable Browser service? (provides noVNC access)"
+echo "Press Enter for yes, or type 'n' for no"
+echo ""
+printf "Enable Browser (Y/n): "
+read -r ENABLE_BROWSER
+
+echo ""
+echo "Enable Explorer service? (provides code-server/VS Code access)"
+echo "Press Enter for yes, or type 'n' for no"
+echo ""
+printf "Enable Explorer (Y/n): "
+read -r ENABLE_EXPLORER
+
+# Disable browser service if requested
+if [ "$ENABLE_BROWSER" = "n" ] || [ "$ENABLE_BROWSER" = "N" ]; then
+    echo "Disabling browser service..."
+    sed -i.bak '/^  browser:/,/^        ipv4_address: 172\.20\.0\.10$/s/^/# /' docker-compose.yml
+    rm -f docker-compose.yml.bak
+    echo "✓ Browser service disabled in docker-compose.yml"
+else
+    echo "✓ Browser service enabled"
+fi
+
+# Disable explorer service if requested
+if [ "$ENABLE_EXPLORER" = "n" ] || [ "$ENABLE_EXPLORER" = "N" ]; then
+    echo "Disabling explorer service..."
+    sed -i.bak '/^  explorer:/,/^        ipv4_address: 172\.20\.0\.11$/s/^/# /' docker-compose.yml
+    rm -f docker-compose.yml.bak
+    echo "✓ Explorer service disabled in docker-compose.yml"
+else
+    echo "✓ Explorer service enabled"
+fi
+
 # Create tailscale serve.json
 echo ""
 echo "=========================================="
 echo "Creating Tailscale Configuration"
 echo "=========================================="
 mkdir -p volumes/tailscale/config
-cat > volumes/tailscale/config/serve.json << 'EOF'
-{
+
+# Build the serve.json dynamically based on enabled services
+SERVE_JSON='{
   "TCP": {
-    "443": { "HTTPS": true },
-    "1443": { "HTTPS": true },
-    "8443": { "HTTPS": true }
+    "443": { "HTTPS": true }'
+
+# Add TCP ports for enabled services
+if [ "$ENABLE_EXPLORER" != "n" ] && [ "$ENABLE_EXPLORER" != "N" ]; then
+    SERVE_JSON="$SERVE_JSON"',
+    "1443": { "HTTPS": true }'
+fi
+
+if [ "$ENABLE_BROWSER" != "n" ] && [ "$ENABLE_BROWSER" != "N" ]; then
+    SERVE_JSON="$SERVE_JSON"',
+    "8443": { "HTTPS": true }'
+fi
+
+SERVE_JSON="$SERVE_JSON"'
   },
   "Web": {
     "${TS_CERT_DOMAIN}:443": {
@@ -66,27 +116,51 @@ cat > volumes/tailscale/config/serve.json << 'EOF'
       "Handlers": {
         "/": { "Proxy": "http://127.0.0.1:18789" }
       }
-    },
+    }'
+
+# Add explorer web config if enabled
+if [ "$ENABLE_EXPLORER" != "n" ] && [ "$ENABLE_EXPLORER" != "N" ]; then
+    SERVE_JSON="$SERVE_JSON"',
     "${TS_CERT_DOMAIN}:1443": {
       "NOTE": "OpenClaw Explorer",
       "Handlers": {
         "/": { "Proxy": "http://172.20.0.11:8443" }
       }
-    },
+    }'
+fi
+
+# Add browser web config if enabled
+if [ "$ENABLE_BROWSER" != "n" ] && [ "$ENABLE_BROWSER" != "N" ]; then
+    SERVE_JSON="$SERVE_JSON"',
     "${TS_CERT_DOMAIN}:8443": {
       "NOTE": "OpenClaw Browser noVNC",
       "Handlers": {
         "/": { "Proxy": "http://172.20.0.10:6080" }
       }
-    }
+    }'
+fi
+
+SERVE_JSON="$SERVE_JSON"'
   },
   "AllowFunnel": {
-    "${TS_CERT_DOMAIN}:443": false,
-    "${TS_CERT_DOMAIN}:1443": false,
-    "${TS_CERT_DOMAIN}:8443": false
+    "${TS_CERT_DOMAIN}:443": false'
+
+# Add AllowFunnel entries for enabled services
+if [ "$ENABLE_EXPLORER" != "n" ] && [ "$ENABLE_EXPLORER" != "N" ]; then
+    SERVE_JSON="$SERVE_JSON"',
+    "${TS_CERT_DOMAIN}:1443": false'
+fi
+
+if [ "$ENABLE_BROWSER" != "n" ] && [ "$ENABLE_BROWSER" != "N" ]; then
+    SERVE_JSON="$SERVE_JSON"',
+    "${TS_CERT_DOMAIN}:8443": false'
+fi
+
+SERVE_JSON="$SERVE_JSON"'
   }
-}
-EOF
+}'
+
+echo "$SERVE_JSON" > volumes/tailscale/config/serve.json
 echo "✓ Created volumes/tailscale/config/serve.json"
 
 echo ""

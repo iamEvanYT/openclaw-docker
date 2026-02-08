@@ -57,6 +57,7 @@ cat > volumes/tailscale/config/serve.json << 'EOF'
 {
   "TCP": {
     "443": { "HTTPS": true },
+    "1443": { "HTTPS": true },
     "8443": { "HTTPS": true }
   },
   "Web": {
@@ -64,6 +65,12 @@ cat > volumes/tailscale/config/serve.json << 'EOF'
       "NOTE": "OpenClaw Gateway",
       "Handlers": {
         "/": { "Proxy": "http://127.0.0.1:18789" }
+      }
+    },
+    "${TS_CERT_DOMAIN}:1443": {
+      "NOTE": "OpenClaw Explorer",
+      "Handlers": {
+        "/": { "Proxy": "http://172.20.0.11:8080" }
       }
     },
     "${TS_CERT_DOMAIN}:8443": {
@@ -75,6 +82,7 @@ cat > volumes/tailscale/config/serve.json << 'EOF'
   },
   "AllowFunnel": {
     "${TS_CERT_DOMAIN}:443": false,
+    "${TS_CERT_DOMAIN}:1443": false,
     "${TS_CERT_DOMAIN}:8443": false
   }
 }

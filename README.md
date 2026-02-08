@@ -97,6 +97,7 @@ Create `volumes/tailscale/config/serve.json`:
 {
   "TCP": {
     "443": { "HTTPS": true },
+    "1443": { "HTTPS": true },
     "8443": { "HTTPS": true }
   },
   "Web": {
@@ -104,6 +105,12 @@ Create `volumes/tailscale/config/serve.json`:
       "NOTE": "OpenClaw Gateway",
       "Handlers": {
         "/": { "Proxy": "http://127.0.0.1:18789" }
+      }
+    },
+    "${TS_CERT_DOMAIN}:1443": {
+      "NOTE": "OpenClaw Explorer",
+      "Handlers": {
+        "/": { "Proxy": "http://172.20.0.11:8080" }
       }
     },
     "${TS_CERT_DOMAIN}:8443": {
@@ -115,6 +122,7 @@ Create `volumes/tailscale/config/serve.json`:
   },
   "AllowFunnel": {
     "${TS_CERT_DOMAIN}:443": false,
+    "${TS_CERT_DOMAIN}:1443": false,
     "${TS_CERT_DOMAIN}:8443": false
   }
 }
@@ -146,10 +154,11 @@ openclaw onboard
 
 After setup and certificate generation, access your services via Tailscale:
 
-| Service          | URL                                        | Description            |
-| ---------------- | ------------------------------------------ | ---------------------- |
-| OpenClaw Gateway | `https://your-machine.tailnet.ts.net`      | Main API and dashboard |
-| noVNC (Browser)  | `https://your-machine.tailnet.ts.net:8443` | Remote browser desktop |
+| Service               | URL                                         | Description            |
+| --------------------- | ------------------------------------------- | ---------------------- |
+| OpenClaw Gateway      | `https://your-machine.tailnet.ts.net`       | Main API and dashboard |
+| OpenClaw Data Explorer| `https://your-machine.tailnet.ts.net:1443`  | Data exploration tool  |
+| Browser Viewer (noVNC)| `https://your-machine.tailnet.ts.net:8443`  | Remote browser desktop |
 
 **Note:** HTTPS will not work until you complete the certificate generation step (see Quick Start step 3).
 

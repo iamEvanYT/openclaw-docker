@@ -9,6 +9,7 @@ A Docker Compose setup for running [OpenClaw](https://github.com/openclaw/opencl
 | **gateway**   | The main OpenClaw gateway (AI agent runtime)        |
 | **tailscale** | Secure VPN tunnel for remote HTTPS access           |
 | **browser**   | Sandbox browser for web automation (Chrome + noVNC) |
+| **explorer**  | Code-server for browsing OpenClaw data and files    |
 
 ## Prerequisites
 
@@ -168,6 +169,7 @@ After setup and certificate generation, access your services via Tailscale:
 .
 ├── docker-compose.yml      # Service definitions
 ├── setup.sh                # Automated setup script
+├── explorer-config.json    # Explorer (code-server) settings
 ├── gateway/.env            # Gateway environment variables
 ├── tailscale/.env          # Tailscale auth key
 ├── scripts/                # Helper scripts

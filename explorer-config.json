@@ -4,5 +4,6 @@
   "terminal.integrated.enablePersistentSessions": false,
   "workbench.enableExperiments": false,
   "extensions.autoUpdate": false,
-  "workbench.startupEditor": "none"
+  "workbench.startupEditor": "none",
+  "chat.disableAIFeatures": true
 }
